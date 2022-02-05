@@ -79,14 +79,12 @@ class RiskApi:
 
 class MockRiskApi(RiskApi):
     def _get_team_api_data(self, endpoint):
-        response = ""
         if endpoint == "players":
-            response = '[{"team": "Aldi", "player": "user1", "turnsPlayed": 16, "mvps": 6, "lastTurn": {"season": 1, "day": 17, "stars": 3}}, {"team": "Aldi", "player": "EpicWolverine", "turnsPlayed": 112, "mvps": 9, "lastTurn": {"season": 1, "day": 17, "stars": 4}}, {"team": "Aldi","player": "user2","turnsPlayed": 92,"mvps": 12,"lastTurn": {"season": -1,"day": 116,"stars": 4}}]'
+            return json.loads('[{"team": "Aldi", "player": "user1", "turnsPlayed": 16, "mvps": 6, "lastTurn": {"season": 1, "day": 17, "stars": 3}}, {"team": "Aldi", "player": "EpicWolverine", "turnsPlayed": 112, "mvps": 9, "lastTurn": {"season": 1, "day": 17, "stars": 4}}, {"team": "Aldi","player": "user2","turnsPlayed": 92,"mvps": 12,"lastTurn": {"season": -1,"day": 116,"stars": 4}}]')
         elif endpoint == "mercs":
-            response = '[{"team": "Aldi", "player": "merc1", "turnsPlayed": 67, "mvps": 6, "stars": 4}, {"team": "Aldi", "player": "Mautamu", "turnsPlayed": 57, "mvps": 6, "stars": 3}]'
+            return json.loads('[{"team": "Aldi", "player": "merc1", "turnsPlayed": 67, "mvps": 6, "stars": 4}, {"team": "Aldi", "player": "Mautamu", "turnsPlayed": 57, "mvps": 6, "stars": 3}]')
         else:
             return super()._get_team_api_data(endpoint)
-        return json.loads(response)
 
     def _get_player_api_data(self, player_name):
         if player_name == "EpicWolverine":
@@ -115,33 +113,12 @@ class TestSuite(unittest.TestCase):
 
     def test_get_player_info(self):
         expected = {
-            'active_team': {'name': 'Aldi'},
-            'name': 'EpicWolverine',
-            'platform': 'reddit',
-            'ratings': {'awards': 5,
-                        'gameTurns': 3,
-                        'mvps': 4,
-                        'overall': 4,
-                        'streak': 4,
-                        'totalTurns': 5},
-            'stats': {'awards': 5,
-                      'gameTurns': 18,
-                      'mvps': 10,
-                      'streak': 18,
-                      'totalTurns': 113},
+            'active_team': {'name': 'Aldi'}, 'name': 'EpicWolverine', 'platform': 'reddit',
+            'ratings': {'awards': 5, 'gameTurns': 3, 'mvps': 4, 'overall': 4, 'streak': 4, 'totalTurns': 5},
+            'stats': {'awards': 5, 'gameTurns': 18, 'mvps': 10, 'streak': 18, 'totalTurns': 113},
             'team': {'name': 'Aldi'},
-            'turns': [{'day': 18,
-                       'mvp': True,
-                       'season': 1,
-                       'stars': 4,
-                       'team': 'Aldi',
-                       'territory': 'Alaska'},
-                      {'day': 17,
-                       'mvp': False,
-                       'season': 1,
-                       'stars': 4,
-                       'team': 'Aldi',
-                       'territory': 'Minnesota'}]}
+            'turns': [{'day': 18, 'mvp': True, 'season': 1, 'stars': 4, 'team': 'Aldi', 'territory': 'Alaska'},
+                      {'day': 17, 'mvp': False, 'season': 1, 'stars': 4, 'team': 'Aldi', 'territory': 'Minnesota'}]}
         self.assertEqual(self.cut.get_player_info("EpicWolverine"), expected)
 
     def test_csv_generation(self):
