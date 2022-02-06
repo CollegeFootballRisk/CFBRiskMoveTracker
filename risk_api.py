@@ -3,7 +3,7 @@ import requests
 import unittest
 
 
-class ApiCache:
+class RiskApiCache:
     def __init__(self):
         self.players = None
         self.mercs = None
@@ -12,9 +12,8 @@ class ApiCache:
 
 class RiskApi:
     def __init__(self):
-        self.cache = ApiCache()
+        self.cache = RiskApiCache()
         self.team = "Aldi"
-        self.csv_name = "stars.csv"
 
     def _get_team_api_data(self, endpoint):
         api_url = f"https://collegefootballrisk.com/api/{endpoint}?team={self.team}"
@@ -57,24 +56,6 @@ class RiskApi:
         if player_name not in self.cache.player_info or self.cache.player_info[player_name] is None:
             self.cache.player_info[player_name] = self._get_player_api_data(player_name)
         return self.cache.player_info[player_name]
-
-    def generate_csv(self):
-        stars = {}
-        stars.update(self.get_player_stars(self.get_players()))
-        stars.update(self.get_merc_stars(self.get_mercs()))
-        csv = "Reddit Name,Stars,Last Day Played\n"
-        for player in stars:
-            player_info = self.get_player_info(player)
-            last_day_played = 0
-            player_turns = player_info["turns"]
-            if len(player_turns) > 0:
-                last_day_played = player_turns[0]["day"]
-            csv += f"{player},{stars[player]},{last_day_played}\n"
-        return csv
-
-    def write_csv_file(self):
-        with open(self.csv_name, "w") as file:
-            file.write(self.generate_csv())
 
 
 class MockRiskApi(RiskApi):
@@ -121,17 +102,3 @@ class TestSuite(unittest.TestCase):
                       {'day': 17, 'mvp': False, 'season': 1, 'stars': 4, 'team': 'Aldi', 'territory': 'Minnesota'}]}
         self.assertEqual(self.cut.get_player_info("EpicWolverine"), expected)
 
-    def test_csv_generation(self):
-        expected = "Reddit Name,Stars,Last Day Played\nuser1,4,18\nEpicWolverine,4,18\nuser2,4,0\nmerc1,4,18\nMautamu,3,16\n"
-        self.assertEqual(self.cut.generate_csv(), expected)
-
-
-if __name__ == "__main__":
-    api = RiskApi()
-    api.write_csv_file()
-    # players = api.get_players()
-    # for player in players:
-    #     player_info = api.get_player_info(player["player"])
-    #     if player["lastTurn"]["stars"] != player_info["ratings"]["overall"]:
-    #         print(f"{player['player']} lasturn stars != current stars: {player['lastTurn']['stars']} != {player_info['ratings']['overall']}")
-    #         print(player_info)
