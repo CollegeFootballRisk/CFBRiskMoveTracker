@@ -8,15 +8,17 @@ class RiskApiCache:
         self.players = None
         self.mercs = None
         self.player_info = {}
+        self.turns = None
 
 
 class RiskApi:
     def __init__(self):
+        self.api_base_url = "https://collegefootballrisk.com/api"
         self.cache = RiskApiCache()
         self.team = "Aldi"
 
     def _get_team_api_data(self, endpoint):
-        api_url = f"https://collegefootballrisk.com/api/{endpoint}?team={self.team}"
+        api_url = f"{self.api_base_url}/{endpoint}?team={self.team}"
         headers = {"Content-Type": "application/json"}
         response_json = requests.get(api_url, headers=headers).json()
         # print(response_json)
@@ -46,7 +48,7 @@ class RiskApi:
         return merc_stars
 
     def _get_player_api_data(self, player_name):
-        api_url = f"https://collegefootballrisk.com/api/player?player={player_name}"
+        api_url = f"{self.api_base_url}/player?player={player_name}"
         headers = {"Content-Type": "application/json"}
         response_json = requests.get(api_url, headers=headers).json()
         # print(response_json)
@@ -56,6 +58,21 @@ class RiskApi:
         if player_name not in self.cache.player_info or self.cache.player_info[player_name] is None:
             self.cache.player_info[player_name] = self._get_player_api_data(player_name)
         return self.cache.player_info[player_name]
+
+    def _get_turns_api_data(self):
+        api_url = f"{self.api_base_url}/turns"
+        headers = {"Content-Type": "application/json"}
+        response_json = requests.get(api_url, headers=headers).json()
+        # print(response_json)
+        return response_json
+
+    def get_turns(self):
+        if self.cache.turns is None:
+            self.cache.turns = self._get_turns_api_data()
+        return self.cache.turns
+
+    def get_previous_turn(self):
+        return self.get_turns()[-2]
 
 
 class MockRiskApi(RiskApi):
@@ -85,6 +102,13 @@ class MockRiskApi(RiskApi):
             return json.loads('{"name": "merc1","ratings": {"awards": 5,"gameTurns": 3,"mvps": 4,"overall": 4,"streak": 4,"totalTurns": 5},"stats": {"awards": 5,"gameTurns": 18,"mvps": 10,"streak": 18,"totalTurns": 113},"turns": [{"day": 18,"mvp": true,"season": 1,"stars": 4,"team": "Aldi","territory": "Alaska"}]}')
         elif player_name == "Mautamu":
             return json.loads('{"name": "Mautamu","ratings": {"awards": 5,"gameTurns": 3,"mvps": 3,"overall": 3,"streak": 3,"totalTurns": 5},"stats": {"awards": 5,"gameTurns": 18,"mvps": 10,"streak": 18,"totalTurns": 113},"turns": [{"day": 16,"mvp": true,"season": 1,"stars": 3,"team": "Aldi","territory": "Alaska"}]}')
+
+    def _get_turns_api_data(self):
+        return [
+            {"id": 18, "season": 1, "day": 18, "complete": True, "active": False, "finale": False, "rollTime": "2022-02-05T03:30:01.032336"},
+            {"id": 19, "season": 1, "day": 19, "complete": True, "active": False, "finale": False, "rollTime": "2022-02-06T03:30:01.685073"},
+            {"id": 20, "season": 1, "day": 20, "complete": False, "active": True, "finale": False, "rollTime": None}
+        ]
 
 
 class TestSuite(unittest.TestCase):
@@ -123,3 +147,7 @@ class TestSuite(unittest.TestCase):
         self.cut.get_player_info("EpicWolverine")
         self.cut.get_player_info("EpicWolverine")
         self.assertEqual(self.cut._get_player_api_data_access_count, 1)
+
+    def test_get_previous_turn(self):
+        expected = {"id": 19, "season": 1, "day": 19, "complete": True, "active": False, "finale": False, "rollTime": "2022-02-06T03:30:01.685073"}
+        self.assertEqual(self.cut.get_previous_turn(), expected)
