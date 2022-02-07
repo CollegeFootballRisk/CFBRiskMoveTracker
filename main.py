@@ -54,15 +54,19 @@ class Main:
         discord_ids = self.discord_api.get_guild_member_ids()
         mapping = self.get_username_mapping()
         for discord_id in discord_ids:
-            if discord_id in mapping["exclude"]:
+            if discord_id in mapping["exclude"] or discord_id == self.discord_api.get_bot_id():
                 continue
             elif discord_id in mapping["map"]:
                 nickname = self.build_discord_nickname(mapping["map"][discord_id])
+                if len(nickname) > 32:
+                    print(f"Warning: Nickname \"{nickname}\" is >32 characters. Skipping.")
+                    continue
                 self.discord_api.set_nickname(discord_id, nickname)
             else:
-                print(f"Discord ID {discord_id} is not in the map file.")
+                print(f"Warning: Discord ID {discord_id} is not in the map file.")
 
     def test_set_discord_nickname(self):
+        self.discord_api.use_test_guild()
         self.discord_api.set_nickname(self.discord_api.secrets["test_user_id"], f"test|EpicWolverine {self.star_char * 4}")
 
 
@@ -86,7 +90,12 @@ if __name__ == "__main__":
                         help="Only update Discord nicknames.")
     parser.add_argument("-test_nick", "--test_nickname", action="store_const", const=True, default=False,
                         help="Only test Discord nickname updating.")
+    parser.add_argument("-test", "--use_test_guild", action="store_const", const=True, default=False,
+                        help="Use test guild.")
     args = parser.parse_args()
+    if args.use_test_guild:
+        main.discord_api.use_test_guild()
+        main.username_map_file = "test_username_map.json"
     if args.authenticate:
         main.discord_api.launch_bot_auth()
     elif args.test_nickname:
