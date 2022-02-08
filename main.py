@@ -45,9 +45,11 @@ class Main:
     def build_discord_nickname(self, mapping):
         self.cache_all_stars()
         reddit_username = mapping['reddit']
+        if reddit_username not in self.stars:
+            print(f"Error: Reddit username \"{reddit_username}\" is not in the star list.")
         nickname = f"{reddit_username} {self.star_char * self.stars[reddit_username]}"  # "[prefix|]username ✯✯✯✯✯"
         if "prefix" in mapping:
-            nickname = f"{mapping['prefix']}|{nickname}"
+            nickname = f"{mapping['prefix']} | {nickname}"
         return nickname
 
     def set_discord_nicknames(self):
@@ -63,7 +65,8 @@ class Main:
                     continue
                 self.discord_api.set_nickname(discord_id, nickname)
             else:
-                print(f"Warning: Discord ID {discord_id} is not in the map file.")
+                user = self.discord_api.get_guild_member(discord_id)
+                print(f"Warning: Discord ID {discord_id} (nick=\"{user['nick']}\") is not in the map file.")
 
     def test_set_discord_nickname(self):
         self.discord_api.use_test_guild()

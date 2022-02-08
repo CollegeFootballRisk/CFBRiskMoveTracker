@@ -24,6 +24,11 @@ class DiscordApi:
             self.bot_id = r.json()['id']
         return self.bot_id
 
+    def get_guild_member(self, discord_id):
+        r = requests.get(f"{self.api_endpoint}/guilds/{self.secrets['guild_id']}/members/{discord_id}", headers=self.headers)
+        r.raise_for_status()
+        return r.json()
+
     def get_guild_members(self):
         params = {"limit": 1000}
         r = requests.get(f"{self.api_endpoint}/guilds/{self.secrets['guild_id']}/members", params=params, headers=self.headers)
