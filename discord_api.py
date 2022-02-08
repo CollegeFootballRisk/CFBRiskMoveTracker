@@ -1,9 +1,10 @@
 import json
-import time
-
 import requests
+import time
 import webbrowser
 import sys
+
+from logger import Logger
 
 
 class DiscordApi:
@@ -42,18 +43,18 @@ class DiscordApi:
         return ids
 
     def set_nickname(self, discord_id, nickname):
-        print(f"Setting {discord_id} to \"{nickname}\"")
+        Logger.log(f"Setting {discord_id} to \"{nickname}\"")
         body = {"nick": nickname}
         r = requests.patch(f"{self.api_endpoint}/guilds/{self.secrets['guild_id']}/members/{discord_id}", json=body, headers=self.headers)
         response = r.json()
         try:
             r.raise_for_status()
         except Exception as e:
-            print(response)
-            print(e)
+            Logger.log(response)
+            Logger.log(e)
             if "retry_after" in response:
                 delay = response["retry_after"]
-                print(f"Waiting {delay} seconds.")
+                Logger.log(f"Waiting {delay} seconds.")
                 time.sleep(delay)
                 response = self.set_nickname(discord_id, nickname)
         return response
@@ -68,5 +69,5 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "auth":
         api.launch_bot_auth()
     else:
-        print(api.get_guild_members())
-        print(api.get_bot_id())
+        Logger.log(api.get_guild_members())
+        Logger.log(api.get_bot_id())
