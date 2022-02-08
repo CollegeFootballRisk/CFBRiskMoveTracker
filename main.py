@@ -1,9 +1,14 @@
 import argparse
+from datetime import datetime
 import json
 import unittest
 
 from discord_api import DiscordApi
 from risk_api import RiskApi, MockRiskApi
+
+
+def log(message):
+    print(f"{datetime.utcnow().isoformat()} {message}")
 
 
 class Main:
@@ -33,10 +38,12 @@ class Main:
         return csv
 
     def write_csv_file(self):
+        log("Writing CSV file...")
         day_number = self.risk_api.get_previous_turn()['day']
         csv_name = f"Day {day_number} {self.csv_suffix}"
         with open(csv_name, "w") as file:
             file.write(self.generate_csv())
+        log("Done writing CSV file.")
 
     def get_username_mapping(self):
         with open(self.username_map_file, 'r') as file:
@@ -46,13 +53,14 @@ class Main:
         self.cache_all_stars()
         reddit_username = mapping['reddit']
         if reddit_username not in self.stars:
-            print(f"Error: Reddit username \"{reddit_username}\" is not in the star list.")
+            log(f"Error: Reddit username \"{reddit_username}\" is not in the star list.")
         nickname = f"{reddit_username} {self.star_char * self.stars[reddit_username]}"  # "[prefix|]username ✯✯✯✯✯"
         if "prefix" in mapping:
             nickname = f"{mapping['prefix']} | {nickname}"
         return nickname
 
     def set_discord_nicknames(self):
+        log("Setting Discord nicknames...")
         discord_ids = self.discord_api.get_guild_member_ids()
         mapping = self.get_username_mapping()
         for discord_id in discord_ids:
@@ -61,12 +69,13 @@ class Main:
             elif discord_id in mapping["map"]:
                 nickname = self.build_discord_nickname(mapping["map"][discord_id])
                 if len(nickname) > 32:
-                    print(f"Warning: Nickname \"{nickname}\" is >32 characters. Skipping.")
+                    log(f"Warning: Nickname \"{nickname}\" is >32 characters. Skipping.")
                     continue
                 self.discord_api.set_nickname(discord_id, nickname)
             else:
                 user = self.discord_api.get_guild_member(discord_id)
-                print(f"Warning: Discord ID {discord_id} (nick=\"{user['nick']}\") is not in the map file.")
+                log(f"Warning: Discord ID {discord_id} (nick=\"{user['nick']}\") is not in the map file.")
+        log("Done setting Discord nicknames.")
 
     def test_set_discord_nickname(self):
         self.discord_api.use_test_guild()
@@ -84,6 +93,7 @@ class TestSuite(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    log("Script start.")
     main = Main()
     parser = argparse.ArgumentParser(description="Automate logging and setting Risk Stars. Default: Generate stars CSV and update Discord nicknames.")
     parser.add_argument("-auth", "--authenticate", action="store_const",
@@ -107,3 +117,4 @@ if __name__ == "__main__":
         if not args.nickname:
             main.write_csv_file()
         main.set_discord_nicknames()
+    log("Script end.")
