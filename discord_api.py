@@ -38,8 +38,11 @@ class DiscordApi:
         print(f"Setting {discord_id} to \"{nickname}\"")
         body = {"nick": nickname}
         r = requests.patch(f"{self.api_endpoint}/guilds/{self.secrets['guild_id']}/members/{discord_id}", json=body, headers=self.headers)
-        # print(r.json())
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except Exception as e:
+            print(r.json())
+            print(e)
         return r.json()
 
     def use_test_guild(self):
