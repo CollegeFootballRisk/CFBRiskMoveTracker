@@ -13,7 +13,7 @@ class Main:
         self.discord_api = DiscordApi()
         self.username_map_file = "username_map.json"
         self.stars = {}
-        self.star_char = "✯"  # ⭐ ✯ * 🌟 ☆
+        self.star_char = "⭐"  # ⭐ ✯ * 🌟 ☆
 
     def cache_all_stars(self):
         if self.stars == {}:
