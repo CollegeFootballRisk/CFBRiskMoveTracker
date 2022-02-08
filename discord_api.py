@@ -1,4 +1,6 @@
 import json
+import time
+
 import requests
 import webbrowser
 import sys
@@ -38,12 +40,18 @@ class DiscordApi:
         print(f"Setting {discord_id} to \"{nickname}\"")
         body = {"nick": nickname}
         r = requests.patch(f"{self.api_endpoint}/guilds/{self.secrets['guild_id']}/members/{discord_id}", json=body, headers=self.headers)
+        response = r.json()
         try:
             r.raise_for_status()
         except Exception as e:
-            print(r.json())
+            print(response)
             print(e)
-        return r.json()
+            if "retry_after" in response:
+                delay = response["retry_after"]
+                print(f"Waiting {delay} seconds.")
+                time.sleep(delay)
+                response = self.set_nickname(discord_id, nickname)
+        return response
 
     def use_test_guild(self):
         self.secrets["guild_id"] = self.secrets["test_guild_id"]
