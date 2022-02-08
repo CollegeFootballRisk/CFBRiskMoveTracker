@@ -90,10 +90,10 @@ if __name__ == "__main__":
                         help="Only update Discord nicknames.")
     parser.add_argument("-test_nick", "--test_nickname", action="store_const", const=True, default=False,
                         help="Only test Discord nickname updating.")
-    parser.add_argument("-test", "--use_test_guild", action="store_const", const=True, default=False,
-                        help="Use test guild.")
+    parser.add_argument("-prod", "--use_prod_guild", action="store_const", const=True, default=False,
+                        help="Use production guild.")
     args = parser.parse_args()
-    if args.use_test_guild:
+    if not args.use_prod_guild:
         main.discord_api.use_test_guild()
         main.username_map_file = "test_username_map.json"
     if args.authenticate:
