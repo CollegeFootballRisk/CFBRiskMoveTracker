@@ -50,6 +50,7 @@ class Main:
         reddit_username = mapping['reddit']
         if reddit_username not in self.stars:
             Logger.log(f"Error: Reddit username \"{reddit_username}\" is not in the star list.")
+            return None
         nickname = f"{reddit_username} {self.star_char * self.stars[reddit_username]}"  # "[prefix|]username ✯✯✯✯✯"
         if "prefix" in mapping:
             nickname = f"{mapping['prefix']} | {nickname}"
@@ -64,6 +65,8 @@ class Main:
                 continue
             elif discord_id in mapping["map"]:
                 nickname = self.build_discord_nickname(mapping["map"][discord_id])
+                if nickname is None:
+                    continue
                 if len(nickname) > 32:
                     Logger.log(f"Warning: Nickname \"{nickname}\" is >32 characters. Skipping.")
                     continue
