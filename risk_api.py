@@ -2,6 +2,7 @@ import json
 import requests
 import unittest
 
+from logger import Logger
 from settings_manager import SettingsManager
 
 
@@ -18,13 +19,15 @@ class RiskApi:
         self.api_base_url = "https://collegefootballrisk.com/api"
         self.cache = RiskApiCache()
         self.team = SettingsManager().get_team_name()
+        self.logger = Logger()
+
+    def _call_api(self, api_url):
+        self.logger.log(f"Calling {api_url}")
+        headers = {"Content-Type": "application/json"}
+        return requests.get(api_url, headers=headers).json()
 
     def _get_team_api_data(self, endpoint):
-        api_url = f"{self.api_base_url}/{endpoint}?team={self.team}"
-        headers = {"Content-Type": "application/json"}
-        response_json = requests.get(api_url, headers=headers).json()
-        # print(response_json)
-        return response_json
+        return self._call_api(f"{self.api_base_url}/{endpoint}?team={self.team}")
 
     def get_players(self):
         if self.cache.players is None:
@@ -50,11 +53,7 @@ class RiskApi:
         return merc_stars
 
     def _get_player_api_data(self, player_name):
-        api_url = f"{self.api_base_url}/player?player={player_name}"
-        headers = {"Content-Type": "application/json"}
-        response_json = requests.get(api_url, headers=headers).json()
-        # print(response_json)
-        return response_json
+        return self._call_api(f"{self.api_base_url}/player?player={player_name}")
 
     def get_player_info(self, player_name):
         if player_name not in self.cache.player_info or self.cache.player_info[player_name] is None:
@@ -62,11 +61,9 @@ class RiskApi:
         return self.cache.player_info[player_name]
 
     def _get_batch_player_api_data(self, player_names):
-        api_url = f"{self.api_base_url}/players/batch?players={','.join(player_names)}"
-        headers = {"Content-Type": "application/json"}
-        response_json = requests.get(api_url, headers=headers).json()
-        # print(response_json)
-        return response_json
+        if player_names:
+            return self._call_api(f"{self.api_base_url}/players/batch?players={','.join(player_names)}")
+        return []
 
     def get_batch_player_info(self, players: list[dict]) -> list[dict]:
         player_names = []
@@ -78,11 +75,7 @@ class RiskApi:
         return players_info
 
     def _get_turns_api_data(self) -> list[dict]:
-        api_url = f"{self.api_base_url}/turns"
-        headers = {"Content-Type": "application/json"}
-        response_json = requests.get(api_url, headers=headers).json()
-        # print(response_json)
-        return response_json
+        return self._call_api(f"{self.api_base_url}/turns")
 
     def get_turns(self) -> list[dict]:
         if self.cache.turns is None:
