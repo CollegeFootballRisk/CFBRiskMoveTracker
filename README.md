@@ -8,10 +8,10 @@ Written for Team Aldi as part of the Grocery Store Beta.
 1. Clone/download this repository.
 2. Install Python if needed.
 3. Create a Discord application at https://discord.com/developers/applications
-4. Under OAuth2, copy the Client ID into your `secrets.json` (see below).
-5. Under Bot, create a bot and copy its token into your `secrets.json` (see below).
+4. Under OAuth2, copy the Client ID into your `settings.json` (see below).
+5. Under Bot, create a bot and copy its token into your `settings.json` (see below).
 6. In Discord, got to Settings -> Advanced -> turn on Developer Mode. This lets you right click on most things and copy their internal ID.
-7. Right click on your server, click Copy ID, and paste into your `secrets.json` under `guild_id` (see below).
+7. Right click on your server, click Copy ID, and paste into your `settings.json` under `guild_id` (see below).
 8. Create a `username_map.json` and fill it out with users' Discord IDs and Reddit usernames. See below for details.
 9. Run `py.exe main.py -auth` to add the bot to your server.
 10. Move the bot's role to the top of the list, or at least above everyone whose nickname you want to be able to change.
@@ -38,16 +38,21 @@ options:
                         Use production guild.
 ```
 
-### `secrets.json`
+### `settings.json`
 Stores various keys that should never be shared with anyone!  
-Create a file named `secrets.json` in this script's folder and paste the following. Replace descriptions with the needed values as described in [Set Up](#set-up).
+Create a file named `settings.json` in this script's folder and paste the following. Replace descriptions with the needed values as described in [Set Up](#set-up).
 ```JSON
 {
-    "client_id": "from registering your bot",
-    "bot_token": "from registering your bot",
-    "guild_id": "the server used with -prod",
-    "test_guild_id": "the server used by default during development",
-    "test_user_id": "the user to change when using -test_nick"
+    "settings": {
+        "team": "Aldi"
+    },
+    "secrets": {
+        "client_id": "from registering your bot",
+        "bot_token": "from registering your bot",
+        "guild_id": "the Discord server used with -prod",
+        "test_guild_id": "the Discord server used by default during development",
+        "test_user_id": "the Discord user to change when using -test_nick"
+    }
 }
 ```
 
