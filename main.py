@@ -23,20 +23,21 @@ class Main:
 
     def generate_csv(self):
         self.cache_all_stars()
-        csv = "Reddit Name,Stars,Last Day Played\n"
+        csv = "Reddit Name,Stars,Last Turn Played\n"
         for player in self.stars:
             player_info = self.risk_api.get_player_info(player)
-            last_day_played = 0
+            last_turn_played = ""
             player_turns = player_info["turns"]
             if len(player_turns) > 0:
-                last_day_played = player_turns[0]["day"]
-            csv += f"{player},{self.stars[player]},{last_day_played}\n"
+                last_turn = player_turns[0]
+                last_turn_played = f"{last_turn['season']}/{last_turn['day']}"
+            csv += f"{player},{self.stars[player]},{last_turn_played}\n"
         return csv
 
     def write_csv_file(self):
         Logger.log("Writing CSV file...")
-        day_number = self.risk_api.get_previous_turn()['day']
-        csv_name = f"Day {day_number} {self.csv_suffix}"
+        previous_turn = self.risk_api.get_previous_turn()
+        csv_name = f"Season {previous_turn['season']} Day {previous_turn['day']} {self.csv_suffix}"
         with open(csv_name, "w") as file:
             file.write(self.generate_csv())
         Logger.log("Done writing CSV file.")
