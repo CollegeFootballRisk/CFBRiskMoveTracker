@@ -89,7 +89,7 @@ class TestSuite(unittest.TestCase):
 
     def test_csv_generation(self):
         expected = "Reddit Name,Stars,Last Day Played\nuser1,4,18\nEpicWolverine,4,18\nuser2,4,0\nmerc1,4,18\nMautamu,3,16\n"
-        self.assertEqual(self.cut.generate_csv(), expected)
+        self.assertEqual(expected, self.cut.generate_csv())
 
 
 if __name__ == "__main__":

@@ -124,8 +124,8 @@ class TestSuite(unittest.TestCase):
         self.assertIsNotNone(self.cut.get_mercs())
 
     def test_stars(self):
-        self.assertEqual(self.cut.get_player_stars(self.cut.get_players()), {"user1": 4, "EpicWolverine": 4, "user2": 4})
-        self.assertEqual(self.cut.get_merc_stars(self.cut.get_mercs()), {"merc1": 4, "Mautamu": 3})
+        self.assertEqual({"user1": 4, "EpicWolverine": 4, "user2": 4}, self.cut.get_player_stars(self.cut.get_players()))
+        self.assertEqual({"merc1": 4, "Mautamu": 3}, self.cut.get_merc_stars(self.cut.get_mercs()))
 
     def test_get_player_info(self):
         expected = {
@@ -135,23 +135,23 @@ class TestSuite(unittest.TestCase):
             'team': {'name': 'Aldi'},
             'turns': [{'day': 18, 'mvp': True, 'season': 1, 'stars': 4, 'team': 'Aldi', 'territory': 'Alaska'},
                       {'day': 17, 'mvp': False, 'season': 1, 'stars': 4, 'team': 'Aldi', 'territory': 'Minnesota'}]}
-        self.assertEqual(self.cut.get_player_info("EpicWolverine"), expected)
+        self.assertEqual(expected, self.cut.get_player_info("EpicWolverine"))
 
     def test_get_players_cache(self):
         self.cut.get_players()
         self.cut.get_players()
-        self.assertEqual(self.cut._get_team_api_data_access_count["players"], 1)
+        self.assertEqual(1, self.cut._get_team_api_data_access_count["players"])
 
     def test_get_mercs_cache(self):
         self.cut.get_mercs()
         self.cut.get_mercs()
-        self.assertEqual(self.cut._get_team_api_data_access_count["mercs"], 1)
+        self.assertEqual(1, self.cut._get_team_api_data_access_count["mercs"])
 
     def test_player_info_cache(self):
         self.cut.get_player_info("EpicWolverine")
         self.cut.get_player_info("EpicWolverine")
-        self.assertEqual(self.cut._get_player_api_data_access_count, 1)
+        self.assertEqual(1, self.cut._get_player_api_data_access_count)
 
     def test_get_previous_turn(self):
         expected = {"id": 19, "season": 1, "day": 19, "complete": True, "active": False, "finale": False, "rollTime": "2022-02-06T03:30:01.685073"}
-        self.assertEqual(self.cut.get_previous_turn(), expected)
+        self.assertEqual(expected, self.cut.get_previous_turn())
