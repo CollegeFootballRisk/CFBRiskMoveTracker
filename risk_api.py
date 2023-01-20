@@ -59,19 +59,20 @@ class RiskApi:
             self.cache.player_info[player_name] = self._get_player_api_data(player_name)
         return self.cache.player_info[player_name]
 
-    def _get_turns_api_data(self):
+    def _get_turns_api_data(self) -> list[dict]:
         api_url = f"{self.api_base_url}/turns"
         headers = {"Content-Type": "application/json"}
         response_json = requests.get(api_url, headers=headers).json()
         # print(response_json)
         return response_json
 
-    def get_turns(self):
+    def get_turns(self) -> list[dict]:
         if self.cache.turns is None:
             self.cache.turns = self._get_turns_api_data()
+            self.cache.turns.sort(key=lambda turn: turn["id"])
         return self.cache.turns
 
-    def get_previous_turn(self):
+    def get_previous_turn(self) -> dict:
         return self.get_turns()[-2]
 
 
@@ -105,9 +106,10 @@ class MockRiskApi(RiskApi):
 
     def _get_turns_api_data(self):
         return [
-            {"id": 18, "season": 1, "day": 18, "complete": True, "active": False, "finale": False, "rollTime": "2022-02-05T03:30:01.032336"},
+            {"id": 20, "season": 1, "day": 20, "complete": False, "active": True, "finale": False, "rollTime": None},
             {"id": 19, "season": 1, "day": 19, "complete": True, "active": False, "finale": False, "rollTime": "2022-02-06T03:30:01.685073"},
-            {"id": 20, "season": 1, "day": 20, "complete": False, "active": True, "finale": False, "rollTime": None}
+            {"id": 18, "season": 1, "day": 18, "complete": True, "active": False, "finale": False, "rollTime": "2022-02-05T03:30:01.032336"},
+            {"id": 17, "season": 1, "day": 17, "complete": True, "active": False, "finale": False, "rollTime": "2022-02-04T03:30:01.032336"}
         ]
 
 
