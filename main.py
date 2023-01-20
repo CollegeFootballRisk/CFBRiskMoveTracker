@@ -18,6 +18,8 @@ class Main:
 
     def cache_all_stars(self):
         if self.stars == {}:
+            self.risk_api.get_batch_player_info(self.risk_api.get_players())
+            self.risk_api.get_batch_player_info(self.risk_api.get_mercs())
             self.stars.update(self.risk_api.get_player_stars(self.risk_api.get_players()))
             self.stars.update(self.risk_api.get_merc_stars(self.risk_api.get_mercs()))
 

@@ -61,6 +61,22 @@ class RiskApi:
             self.cache.player_info[player_name] = self._get_player_api_data(player_name)
         return self.cache.player_info[player_name]
 
+    def _get_batch_player_api_data(self, player_names):
+        api_url = f"{self.api_base_url}/players/batch?players={','.join(player_names)}"
+        headers = {"Content-Type": "application/json"}
+        response_json = requests.get(api_url, headers=headers).json()
+        # print(response_json)
+        return response_json
+
+    def get_batch_player_info(self, players: list[dict]) -> list[dict]:
+        player_names = []
+        for player in players:
+            player_names.append(player["player"])
+        players_info = self._get_batch_player_api_data(player_names)
+        for player in players_info:
+            self.cache.player_info[player["name"]] = player
+        return players_info
+
     def _get_turns_api_data(self) -> list[dict]:
         api_url = f"{self.api_base_url}/turns"
         headers = {"Content-Type": "application/json"}
@@ -106,6 +122,9 @@ class MockRiskApi(RiskApi):
         elif player_name == "Mautamu":
             return json.loads('{"name": "Mautamu","ratings": {"awards": 5,"gameTurns": 3,"mvps": 3,"overall": 3,"streak": 3,"totalTurns": 5},"stats": {"awards": 5,"gameTurns": 18,"mvps": 10,"streak": 18,"totalTurns": 113},"turns": [{"day": 16,"mvp": true,"season": 1,"stars": 3,"team": "Aldi","territory": "Alaska"}]}')
 
+    def _get_batch_player_api_data(self, player_names):
+        return json.loads('[{"name": "EpicWolverine", "platform": "reddit", "ratings": {"awards": 5, "gameTurns": 3, "mvps": 4, "overall": 4, "streak": 4, "totalTurns": 5}, "stats": {"awards": 5, "gameTurns": 18, "mvps": 10, "streak": 18, "totalTurns": 113}, "team": {"name": "Aldi"}, "turns": [{"day": 18, "mvp": true, "season": 1, "stars": 4, "team": "Aldi", "territory": "Alaska"}, {"day": 17, "mvp": false, "season": 1, "stars": 4, "team": "Aldi", "territory": "Minnesota"}]}, {"name": "Mautamu", "team": {"name": "Texas A&M"}, "platform": "reddit", "ratings": {"overall": 1, "totalTurns": 3, "gameTurns": 1, "mvps": 1, "streak": 1}, "stats": {"totalTurns": 42, "gameTurns": 0, "mvps": 0, "streak": 0}, "turns": [{"season": 2, "day": 50, "stars": 3, "mvp": false, "territory": "Stillwater", "team": "Texas A&M"}]} ]')
+
     def _get_turns_api_data(self):
         return [
             {"id": 20, "season": 1, "day": 20, "complete": False, "active": True, "finale": False, "rollTime": None},
@@ -136,6 +155,24 @@ class TestSuite(unittest.TestCase):
             'turns': [{'day': 18, 'mvp': True, 'season': 1, 'stars': 4, 'team': 'Aldi', 'territory': 'Alaska'},
                       {'day': 17, 'mvp': False, 'season': 1, 'stars': 4, 'team': 'Aldi', 'territory': 'Minnesota'}]}
         self.assertEqual(expected, self.cut.get_player_info("EpicWolverine"))
+
+    def test_get_batch_player_info(self):
+        self.maxDiff = None
+        expected = [
+            {'name': 'EpicWolverine', 'platform': 'reddit',
+            'ratings': {'awards': 5, 'gameTurns': 3, 'mvps': 4, 'overall': 4, 'streak': 4, 'totalTurns': 5},
+            'stats': {'awards': 5, 'gameTurns': 18, 'mvps': 10, 'streak': 18, 'totalTurns': 113},
+            'team': {'name': 'Aldi'},
+            'turns': [{'day': 18, 'mvp': True, 'season': 1, 'stars': 4, 'team': 'Aldi', 'territory': 'Alaska'},
+                      {'day': 17, 'mvp': False, 'season': 1, 'stars': 4, 'team': 'Aldi', 'territory': 'Minnesota'}]},
+            {"name": "Mautamu", "team": {"name": "Texas A&M"}, "platform": "reddit",
+             "ratings": {"overall": 1, "totalTurns": 3, "gameTurns": 1, "mvps": 1, "streak": 1},
+             "stats": {"totalTurns": 42, "gameTurns": 0, "mvps": 0, "streak": 0},
+             "turns": [{"season": 2, "day": 50, "stars": 3, "mvp": False, "territory": "Stillwater", "team": "Texas A&M"}]}
+        ]
+        self.assertEqual(expected, self.cut.get_batch_player_info([{"player": "EpicWolverine"}, {"player": "Mautamu"}]))
+        self.assertEqual(0, self.cut._get_player_api_data_access_count)
+        self.assertEqual({"EpicWolverine": expected[0], "Mautamu": expected[1]}, self.cut.cache.player_info)
 
     def test_get_players_cache(self):
         self.cut.get_players()
