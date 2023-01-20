@@ -2,6 +2,8 @@ import json
 import requests
 import unittest
 
+from settings_manager import SettingsManager
+
 
 class RiskApiCache:
     def __init__(self):
@@ -15,7 +17,7 @@ class RiskApi:
     def __init__(self):
         self.api_base_url = "https://collegefootballrisk.com/api"
         self.cache = RiskApiCache()
-        self.team = "Aldi"
+        self.team = SettingsManager().settings["settings"]["team"]
 
     def _get_team_api_data(self, endpoint):
         api_url = f"{self.api_base_url}/{endpoint}?team={self.team}"
