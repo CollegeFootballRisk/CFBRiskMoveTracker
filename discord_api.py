@@ -10,7 +10,7 @@ from settings_manager import SettingsManager
 class DiscordApi:
     def __init__(self):
         self.api_endpoint = 'https://discord.com/api/v9'
-        self.secrets = SettingsManager().settings["secrets"]
+        self.secrets = SettingsManager().get_secrets()
         self.headers = {"Authorization": f"Bot {self.secrets['bot_token']}"}
         self.bot_id = None
 
