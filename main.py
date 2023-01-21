@@ -25,15 +25,18 @@ class Main:
 
     def generate_csv(self):
         self.cache_all_stars()
-        csv = "Reddit Name,Stars,Last Turn Played\n"
+        csv = "Reddit Name,Original Team,Overall Stars,Last Turn Played,Last Turn Territory," \
+              "Total Turns,Total Turns Stars,Game Turns,Game Turns Stars,MVPs,MVP Stars,Streak,Streak Stars\n"
         for player in self.stars:
             player_info = self.risk_api.get_player_info(player)
-            last_turn_played = ""
             player_turns = player_info["turns"]
-            if len(player_turns) > 0:
-                last_turn = player_turns[0]
-                last_turn_played = f"{last_turn['season']}/{last_turn['day']}"
-            csv += f"{player},{self.stars[player]},{last_turn_played}\n"
+            last_turn = player_turns[0] if len(player_turns) > 0 else {"season": "", "day": "", "territory": ""}
+            csv += f"{player},{player_info['team']['name']},{self.stars[player]}," \
+                   f"{last_turn['season']}/{last_turn['day']},{last_turn['territory']}," \
+                   f"{player_info['stats']['totalTurns']},{player_info['ratings']['totalTurns']}," \
+                   f"{player_info['stats']['gameTurns']},{player_info['ratings']['gameTurns']}," \
+                   f"{player_info['stats']['mvps']},{player_info['ratings']['mvps']}," \
+                   f"{player_info['stats']['streak']},{player_info['ratings']['streak']}\n"
         return csv
 
     def write_csv_file(self):
