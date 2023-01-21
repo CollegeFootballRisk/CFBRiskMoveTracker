@@ -5,6 +5,8 @@ import unittest
 from logger import Logger
 from settings_manager import SettingsManager
 
+MAX_BATCH_SIZE = 400
+
 
 class RiskApiCache:
     def __init__(self):
@@ -62,7 +64,11 @@ class RiskApi:
 
     def _get_batch_player_api_data(self, player_names):
         if player_names:
-            return self._call_api(f"{self.api_base_url}/players/batch?players={','.join(player_names)}")
+            players_data = []
+            for i in range(0, len(player_names), MAX_BATCH_SIZE):
+                api_url = f"{self.api_base_url}/players/batch?players={','.join(player_names[i:i + MAX_BATCH_SIZE])}"
+                players_data += self._call_api(api_url)
+            return players_data
         return []
 
     def get_batch_player_info(self, players: list[dict]) -> list[dict]:
