@@ -6,6 +6,8 @@ from discord_api import DiscordApi
 from logger import Logger
 from risk_api import RiskApi, MockRiskApi
 
+NICKNAME_CHAR_LIMIT = 32
+
 
 class Main:
     def __init__(self):
@@ -59,12 +61,16 @@ class Main:
             return None
         nickname = f"{reddit_username} {self.star_char * self.stars[reddit_username]}"  # "[prefix|]username ✯✯✯✯✯"
         if "prefix" in mapping:
-            nickname = f"{mapping['prefix']} | {nickname}"
+            prefixed_nickname = f"{mapping['prefix']} | {nickname}"
+            if len(prefixed_nickname) <= NICKNAME_CHAR_LIMIT:
+                nickname = prefixed_nickname
+            else:
+                Logger.log(f"Warning: Prefixed nickname \"{prefixed_nickname}\" is >{NICKNAME_CHAR_LIMIT} characters. Ignoring prefix.")
         return nickname
 
     def set_discord_nickname(self, discord_id: str, nickname: str) -> None:
-        if len(nickname) > 32:
-            Logger.log(f"Warning: Nickname \"{nickname}\" is >32 characters. Skipping.")
+        if len(nickname) > NICKNAME_CHAR_LIMIT:
+            Logger.log(f"Warning: Nickname \"{nickname}\" is >{NICKNAME_CHAR_LIMIT} characters. Skipping.")
             return
         self.discord_api.set_nickname(discord_id, nickname)
 
