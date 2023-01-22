@@ -8,7 +8,8 @@ class Main:
         self.diplomats_csv = "Risk Tracking Sheet - Diplomats.csv"
         self.json_path = "username_map.json"
 
-    def read_csv(self, path: str) -> list[dict]:
+    @staticmethod
+    def read_csv(path: str) -> list[dict]:
         rows = []
         with open(path, 'r', encoding='utf-8') as file:
             header = file.readline().strip().split(',')
@@ -16,23 +17,25 @@ class Main:
                 rows.append({key: value for key, value in zip(header, line.strip().split(','))})
         return rows
 
-    def extract_players(self, csv: list[dict[str, str]]) -> dict[str, dict[str, dict]]:
+    @staticmethod
+    def extract_players(csv: list[dict[str, str]]) -> dict[str, dict[str, dict]]:
         prefix_column = "Discord Nickname Prefix"
         update_nickname_column = "Update Discord Nickname with Bot?"
         discord_id_column = "Discord ID"
         reddit_username_column = "Reddit"
         reason_column = "Notes"
-        map = {"players": {}, "exclude": {}}
+        mapping = {"players": {}, "exclude": {}}
         for row in csv:
             if row[discord_id_column] and row[reddit_username_column]:
                 category = "players" if row[update_nickname_column] == "Yes" else "exclude"
-                map[category][row[discord_id_column]] = {"reddit": row[reddit_username_column],
-                                                         "prefix": row[prefix_column]}
+                mapping[category][row[discord_id_column]] = {"reddit": row[reddit_username_column],
+                                                             "prefix": row[prefix_column]}
                 if row[reason_column]:
-                    map[category][row[discord_id_column]]["reason"] = row[reason_column]
-        return map
+                    mapping[category][row[discord_id_column]]["reason"] = row[reason_column]
+        return mapping
 
-    def extract_diplomats(self, csv: list[dict[str, str]]) -> dict[str, dict[str, dict]]:
+    @staticmethod
+    def extract_diplomats(csv: list[dict[str, str]]) -> dict[str, dict[str, dict]]:
         nickname_column = "Discord Nickname"
         team_column = "Team"
         discord_id_column = "Discord ID"
@@ -43,7 +46,8 @@ class Main:
                                                      "team": row[team_column]}
         return {"diplomats": diplomats}
 
-    def write_json(self, path: str, obj: dict[str, dict[str, dict]]):
+    @staticmethod
+    def write_json(path: str, obj: dict[str, dict[str, dict]]):
         with open(path, 'w', encoding='utf-8') as file:
             file.writelines(json.dumps(obj, indent=4))
 
