@@ -12,9 +12,9 @@ class Main:
     def read_csv(path: str) -> list[dict]:
         rows = []
         with open(path, 'r', encoding='utf-8') as file:
-            header = file.readline().strip().split(',')
+            header = [x.strip() for x in file.readline().split(',')]
             for line in file:
-                rows.append({key: value for key, value in zip(header, line.strip().split(','))})
+                rows.append({key.strip(): value.strip() for key, value in zip(header, line.split(','))})
         return rows
 
     @staticmethod
