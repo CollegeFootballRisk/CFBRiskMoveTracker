@@ -55,7 +55,7 @@ class Main:
 
     def build_discord_nickname_with_stars(self, mapping):
         self.cache_all_stars()
-        reddit_username = mapping['reddit']
+        reddit_username = mapping['reddit'].strip()
         if reddit_username not in self.stars:
             Logger.log(f"Error: Reddit username \"{reddit_username}\" is not in the star list.")
             return None
