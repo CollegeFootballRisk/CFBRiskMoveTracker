@@ -51,7 +51,7 @@ class Main:
         with open(self.username_map_file, 'r') as file:
             return json.load(file)
 
-    def build_discord_nickname(self, mapping):
+    def build_discord_nickname_with_stars(self, mapping):
         self.cache_all_stars()
         reddit_username = mapping['reddit']
         if reddit_username not in self.stars:
@@ -62,6 +62,12 @@ class Main:
             nickname = f"{mapping['prefix']} | {nickname}"
         return nickname
 
+    def set_discord_nickname(self, discord_id: str, nickname: str) -> None:
+        if len(nickname) > 32:
+            Logger.log(f"Warning: Nickname \"{nickname}\" is >32 characters. Skipping.")
+            return
+        self.discord_api.set_nickname(discord_id, nickname)
+
     def set_discord_nicknames(self):
         Logger.log("Setting Discord nicknames...")
         discord_ids = self.discord_api.get_guild_member_ids()
@@ -69,14 +75,14 @@ class Main:
         for discord_id in discord_ids:
             if discord_id in mapping["exclude"] or discord_id == self.discord_api.get_bot_id():
                 continue
-            elif discord_id in mapping["map"]:
-                nickname = self.build_discord_nickname(mapping["map"][discord_id])
+            elif discord_id in mapping["players"]:
+                nickname = self.build_discord_nickname_with_stars(mapping["players"][discord_id])
                 if nickname is None:
                     continue
-                if len(nickname) > 32:
-                    Logger.log(f"Warning: Nickname \"{nickname}\" is >32 characters. Skipping.")
-                    continue
-                self.discord_api.set_nickname(discord_id, nickname)
+                self.set_discord_nickname(discord_id, nickname)
+            elif discord_id in mapping["diplomats"]:
+                diplomat = mapping["diplomats"][discord_id]
+                self.set_discord_nickname(discord_id, f"{diplomat['nickname']} | {diplomat['team']}")
             else:
                 user = self.discord_api.get_guild_member(discord_id)
                 Logger.log(f"Warning: Discord ID {discord_id} (nick=\"{user['nick']}\") is not in the map file.")
