@@ -60,7 +60,7 @@ class Main:
             Logger.log(f"Error: Reddit username \"{reddit_username}\" is not in the star list.")
             return None
         nickname = f"{reddit_username} {self.star_char * self.stars[reddit_username]}"  # "[prefix|]username ✯✯✯✯✯"
-        if "prefix" in mapping:
+        if "prefix" in mapping and mapping["prefix"]:
             prefixed_nickname = f"{mapping['prefix']} | {nickname}"
             if len(prefixed_nickname) <= NICKNAME_CHAR_LIMIT:
                 nickname = prefixed_nickname
