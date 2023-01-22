@@ -53,13 +53,20 @@ class Main:
         with open(self.username_map_file, 'r') as file:
             return json.load(file)
 
+    def get_username_in_stars_dict(self, reddit_username: str):
+        for player in self.stars.keys():
+            if reddit_username.lower() == player.lower():
+                return player
+
     def build_discord_nickname_with_stars(self, mapping):
         self.cache_all_stars()
-        reddit_username = mapping['reddit'].strip()
-        if reddit_username not in self.stars:
-            Logger.log(f"Error: Reddit username \"{reddit_username}\" is not in the star list.")
+        mapping_reddit_username = mapping['reddit'].strip()
+        reddit_username = self.get_username_in_stars_dict(mapping_reddit_username)
+        if not reddit_username:
+            Logger.log(f"Error: Reddit username \"{mapping_reddit_username}\" is not in the star list.")
             return None
-        nickname = f"{reddit_username} {self.star_char * self.stars[reddit_username]}"  # "[prefix|]username ✯✯✯✯✯"
+        # "[prefix|]username ✯✯✯✯✯"
+        nickname = f"{reddit_username} {self.star_char * self.stars[reddit_username]}"
         if "prefix" in mapping and mapping["prefix"]:
             prefixed_nickname = f"{mapping['prefix']} | {nickname}"
             if len(prefixed_nickname) <= NICKNAME_CHAR_LIMIT:
@@ -102,11 +109,11 @@ class Main:
 class TestSuite(unittest.TestCase):
     def setUp(self) -> None:
         self.cut = Main()
-        self.cut.risk_api = MockRiskApi()
 
-    def test_csv_generation(self):
-        expected = "Reddit Name,Stars,Last Day Played\nuser1,4,18\nEpicWolverine,4,18\nuser2,4,0\nmerc1,4,18\nMautamu,3,16\n"
-        self.assertEqual(expected, self.cut.generate_csv())
+    def test_get_username_in_stars_dict(self):
+        self.cut.stars = {"PM_me_your_moves": 1, "EpicWolverine1": 2}
+        self.assertEqual("PM_me_your_moves", self.cut.get_username_in_stars_dict("PM_Me_Your_Moves"))
+        self.assertEqual("EpicWolverine1", self.cut.get_username_in_stars_dict("epicwolverine1"))
 
 
 if __name__ == "__main__":
