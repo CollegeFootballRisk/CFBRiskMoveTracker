@@ -3,8 +3,8 @@ from datetime import datetime
 
 
 class Logger:
-    def __init__(self):
-        self.log_path = "script.log"
+    def __init__(self, log_path="script.log"):
+        self.log_path = log_path
 
     def log(self, message):
         sys.stdin.reconfigure(encoding='utf-8')
