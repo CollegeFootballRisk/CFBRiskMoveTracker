@@ -42,9 +42,9 @@ class Main:
         return csv
 
     def write_csv_file(self):
-        Logger.log("Writing CSV file...")
         previous_turn = self.risk_api.get_previous_turn()
         csv_name = f"Season {previous_turn['season']} Day {previous_turn['day']} {self.csv_suffix}"
+        Logger.log(f"Writing CSV file \"{csv_name}\"")
         with open(csv_name, "w") as file:
             file.write(self.generate_csv())
         Logger.log("Done writing CSV file.")
