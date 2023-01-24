@@ -13,6 +13,7 @@ class DiscordApi:
         self.secrets = SettingsManager().get_secrets()
         self.headers = {"Authorization": f"Bot {self.secrets['bot_token']}"}
         self.bot_id = None
+        self.logger = Logger()
 
     def launch_bot_auth(self):
         webbrowser.open(f"{self.api_endpoint}/oauth2/authorize?client_id={self.secrets['client_id']}&scope=bot&permissions=134217728&guild_id={self.secrets['guild_id']}&disable_guild_select=true")
@@ -23,11 +24,11 @@ class DiscordApi:
         try:
             r.raise_for_status()
         except Exception as e:
-            Logger.log(response)
-            Logger.log(e)
+            self.logger.log(response)
+            self.logger.log(e)
             if "retry_after" in response:
                 delay = response["retry_after"]
-                Logger.log(f"Waiting {delay} seconds.")
+                self.logger.log(f"Waiting {delay} seconds.")
                 time.sleep(delay)
                 response = self.call_api_get(url, params)
         return response
@@ -56,17 +57,17 @@ class DiscordApi:
         try:
             r.raise_for_status()
         except Exception as e:
-            Logger.log(response)
-            Logger.log(e)
+            self.logger.log(response)
+            self.logger.log(e)
             if "retry_after" in response:
                 delay = response["retry_after"]
-                Logger.log(f"Waiting {delay} seconds.")
+                self.logger.log(f"Waiting {delay} seconds.")
                 time.sleep(delay)
                 response = self.call_api_patch(url, body)
         return response
 
     def set_nickname(self, discord_id, nickname):
-        Logger.log(f"Setting {discord_id} to \"{nickname}\"")
+        self.logger.log(f"Setting {discord_id} to \"{nickname}\"")
         url = f"{self.api_endpoint}/guilds/{self.secrets['guild_id']}/members/{discord_id}"
         body = {"nick": nickname}
         return self.call_api_patch(url, body)
@@ -81,5 +82,5 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "auth":
         api.launch_bot_auth()
     else:
-        Logger.log(api.get_guild_members())
-        Logger.log(api.get_bot_id())
+        self.logger.log(api.get_guild_members())
+        self.logger.log(api.get_bot_id())

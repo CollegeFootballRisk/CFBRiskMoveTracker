@@ -4,7 +4,7 @@ import unittest
 
 from discord_api import DiscordApi
 from logger import Logger
-from risk_api import RiskApi, MockRiskApi
+from risk_api import RiskApi
 
 NICKNAME_CHAR_LIMIT = 32
 
@@ -17,6 +17,7 @@ class Main:
         self.username_map_file = "username_map.json"
         self.stars = {}
         self.star_char = "⭐"  # ⭐ ✯ * 🌟 ☆
+        self.logger = Logger()
 
     def cache_all_stars(self):
         if self.stars == {}:
@@ -44,10 +45,10 @@ class Main:
     def write_csv_file(self):
         previous_turn = self.risk_api.get_previous_turn()
         csv_name = f"Season {previous_turn['season']} Day {previous_turn['day']} {self.csv_suffix}"
-        Logger.log(f"Writing CSV file \"{csv_name}\"")
+        self.logger.log(f"Writing CSV file \"{csv_name}\"")
         with open(csv_name, "w") as file:
             file.write(self.generate_csv())
-        Logger.log("Done writing CSV file.")
+        self.logger.log("Done writing CSV file.")
 
     def get_username_mapping(self):
         with open(self.username_map_file, 'r') as file:
@@ -63,7 +64,7 @@ class Main:
         mapping_reddit_username = mapping['reddit'].strip()
         reddit_username = self.get_username_in_stars_dict(mapping_reddit_username)
         if not reddit_username:
-            Logger.log(f"Error: Reddit username \"{mapping_reddit_username}\" is not in the star list.")
+            self.logger.log(f"Error: Reddit username \"{mapping_reddit_username}\" is not in the star list.")
             return None
         # "[prefix|]username ✯✯✯✯✯"
         nickname = f"{reddit_username} {self.star_char * self.stars[reddit_username]}"
@@ -72,17 +73,17 @@ class Main:
             if len(prefixed_nickname) <= NICKNAME_CHAR_LIMIT:
                 nickname = prefixed_nickname
             else:
-                Logger.log(f"Warning: Prefixed nickname \"{prefixed_nickname}\" is >{NICKNAME_CHAR_LIMIT} characters. Ignoring prefix.")
+                self.logger.log(f"Warning: Prefixed nickname \"{prefixed_nickname}\" is >{NICKNAME_CHAR_LIMIT} characters. Ignoring prefix.")
         return nickname
 
     def set_discord_nickname(self, discord_id: str, nickname: str) -> None:
         if len(nickname) > NICKNAME_CHAR_LIMIT:
-            Logger.log(f"Warning: Nickname \"{nickname}\" is >{NICKNAME_CHAR_LIMIT} characters. Skipping.")
+            self.logger.log(f"Warning: Nickname \"{nickname}\" is >{NICKNAME_CHAR_LIMIT} characters. Skipping.")
             return
         self.discord_api.set_nickname(discord_id, nickname)
 
     def set_discord_nicknames(self):
-        Logger.log("Setting Discord nicknames...")
+        self.logger.log("Setting Discord nicknames...")
         discord_ids = self.discord_api.get_guild_member_ids()
         mapping = self.get_username_mapping()
         for discord_id in discord_ids:
@@ -98,8 +99,8 @@ class Main:
                 self.set_discord_nickname(discord_id, f"{diplomat['nickname']} | {diplomat['team']}")
             else:
                 user = self.discord_api.get_guild_member(discord_id)
-                Logger.log(f"Warning: Discord ID {discord_id} (\"{user['user']['username']}\") is not in the map file.")
-        Logger.log("Done setting Discord nicknames.")
+                self.logger.log(f"Warning: Discord ID {discord_id} (\"{user['user']['username']}\") is not in the map file.")
+        self.logger.log("Done setting Discord nicknames.")
 
     def test_set_discord_nickname(self):
         self.discord_api.use_test_guild()
@@ -117,7 +118,7 @@ class TestSuite(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    Logger.log("Script start.")
+    Logger().log("Script start.")
     main = Main()
     parser = argparse.ArgumentParser(description="Automate logging and setting Risk Stars. Default: Generate stars CSV and update Discord nicknames.")
     parser.add_argument("-auth", "--authenticate", action="store_const",
@@ -141,4 +142,4 @@ if __name__ == "__main__":
         if not args.nickname:
             main.write_csv_file()
         main.set_discord_nicknames()
-    Logger.log("Script end.")
+    Logger().log("Script end.")
