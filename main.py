@@ -28,19 +28,37 @@ class Main:
 
     def generate_csv(self):
         self.cache_all_stars()
+        self.discord_api.get_guild_members()
+        mapping = self.get_reddit_to_discord_mapping(self.get_username_mapping())
         csv = "Reddit Name,Original Team,Overall Stars,Last Turn Played,Last Turn Territory," \
-              "Total Turns,Total Turns Stars,Game Turns,Game Turns Stars,MVPs,MVP Stars,Streak,Streak Stars\n"
+              "Total Turns,Total Turns Stars,Game Turns,Game Turns Stars,MVPs,MVP Stars,Streak,Streak Stars," \
+              "Discord ID,Discord Name\n"
         for player in self.stars:
             player_info = self.risk_api.get_player_info(player)
             player_turns = player_info["turns"]
             last_turn = player_turns[0] if len(player_turns) > 0 else {"season": "", "day": "", "territory": ""}
+            player_lower = player.lower()
+            discord_id = mapping[player_lower] if player_lower in mapping else ""
+            discord_username = self.get_discord_full_username(self.discord_api.get_guild_member(discord_id)) if discord_id else ""
             csv += f"{player},{player_info['team']['name']},{self.stars[player]}," \
                    f"{last_turn['season']}/{last_turn['day']},{last_turn['territory']}," \
                    f"{player_info['stats']['totalTurns']},{player_info['ratings']['totalTurns']}," \
                    f"{player_info['stats']['gameTurns']},{player_info['ratings']['gameTurns']}," \
                    f"{player_info['stats']['mvps']},{player_info['ratings']['mvps']}," \
-                   f"{player_info['stats']['streak']},{player_info['ratings']['streak']}\n"
+                   f"{player_info['stats']['streak']},{player_info['ratings']['streak']}," \
+                   f"{discord_id},{discord_username}\n"
         return csv
+
+    def get_reddit_to_discord_mapping(self, discord_to_reddit_mapping):
+        combined_users = (discord_to_reddit_mapping["players"] | discord_to_reddit_mapping["exclude"])
+        mapping = {}
+        for discord_id in combined_users:
+            print(f"{discord_id=} {combined_users[discord_id]=}")
+            if "reddit" in combined_users[discord_id]:
+                reddit = combined_users[discord_id]["reddit"].lower()
+                if reddit not in mapping:
+                    mapping[reddit] = discord_id
+        return mapping
 
     def write_csv_file(self):
         previous_turn = self.risk_api.get_previous_turn()
@@ -99,10 +117,13 @@ class Main:
                 self.set_discord_nickname(discord_id, f"{diplomat['nickname']} | {diplomat['team']}")
             else:
                 user = self.discord_api.get_guild_member(discord_id)
-                username = f"{user['user']['username']}#{user['user']['discriminator']}"
+                username = self.get_discord_full_username(user)
                 self.logger.log(f"Warning: Discord ID {discord_id} (\"{username}\") is not in the map file.")
                 pass
         self.logger.log("Done setting Discord nicknames.")
+
+    def get_discord_full_username(self, user):
+        return f"{user['user']['username']}#{user['user']['discriminator']}"
 
     def test_set_discord_nickname(self):
         self.discord_api.use_test_guild()
