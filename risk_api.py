@@ -25,7 +25,7 @@ class RiskApi:
 
     def _call_api(self, endpoint):
         api_url = f"{self.api_base_url}/{endpoint}"
-        self.logger.log(f"Calling {api_url}")
+        self.logger.log(f"Calling GET {api_url}")
         headers = {"Content-Type": "application/json"}
         return requests.get(api_url, headers=headers).json()
 

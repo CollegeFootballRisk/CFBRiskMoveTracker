@@ -99,7 +99,9 @@ class Main:
                 self.set_discord_nickname(discord_id, f"{diplomat['nickname']} | {diplomat['team']}")
             else:
                 user = self.discord_api.get_guild_member(discord_id)
-                self.logger.log(f"Warning: Discord ID {discord_id} (\"{user['user']['username']}\") is not in the map file.")
+                username = f"{user['user']['username']}#{user['user']['discriminator']}"
+                self.logger.log(f"Warning: Discord ID {discord_id} (\"{username}\") is not in the map file.")
+                pass
         self.logger.log("Done setting Discord nicknames.")
 
     def test_set_discord_nickname(self):
