@@ -39,7 +39,8 @@ class Main:
             last_turn = player_turns[0] if len(player_turns) > 0 else {"season": "", "day": "", "territory": ""}
             player_lower = player.lower()
             discord_id = mapping[player_lower] if player_lower in mapping else ""
-            discord_username = self.get_discord_full_username(self.discord_api.get_guild_member(discord_id)) if discord_id else ""
+            discord_user = self.discord_api.get_guild_member(discord_id)
+            discord_username = self.get_discord_full_username(discord_user) if discord_id and discord_user else ""
             csv += f"{player},{player_info['team']['name']},{self.stars[player]}," \
                    f"{last_turn['season']}/{last_turn['day']},{last_turn['territory']}," \
                    f"{player_info['stats']['totalTurns']},{player_info['ratings']['totalTurns']}," \
@@ -53,7 +54,6 @@ class Main:
         combined_users = (discord_to_reddit_mapping["players"] | discord_to_reddit_mapping["exclude"])
         mapping = {}
         for discord_id in combined_users:
-            print(f"{discord_id=} {combined_users[discord_id]=}")
             if "reddit" in combined_users[discord_id]:
                 reddit = combined_users[discord_id]["reddit"].lower()
                 if reddit not in mapping:

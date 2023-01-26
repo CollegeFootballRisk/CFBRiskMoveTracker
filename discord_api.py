@@ -48,9 +48,12 @@ class DiscordApi:
 
     def get_guild_member(self, discord_id):
         cached_member = next((item for item in self.cache.guild_members if item["user"]["id"] == discord_id), None)
-        if cached_member is None:
+        if cached_member is None and discord_id:
             cached_member = self.call_api_get(f"guilds/{self.secrets['guild_id']}/members/{discord_id}")
-            self.cache.guild_members.append(cached_member)
+            if "user" in cached_member:
+                self.cache.guild_members.append(cached_member)
+            else:
+                return
         return cached_member
 
     def get_guild_members(self):
