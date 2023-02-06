@@ -5,6 +5,7 @@ import unittest
 from discord_api import DiscordApi
 from logger import Logger
 from risk_api import RiskApi
+from settings_manager import SettingsManager
 
 NICKNAME_CHAR_LIMIT = 32
 
@@ -18,6 +19,7 @@ class Main:
         self.stars = {}
         self.star_char = "⭐"  # ⭐ ✯ * 🌟 ☆
         self.logger = Logger()
+        self.secrets = SettingsManager()
 
     def cache_all_stars(self):
         if self.stars == {}:
@@ -29,10 +31,11 @@ class Main:
     def generate_csv(self):
         self.cache_all_stars()
         self.discord_api.get_guild_members()
+        verified_role_id = self.get_verified_role_id()
         mapping = self.get_reddit_to_discord_mapping(self.get_username_mapping())
         csv = "Reddit Name,Original Team,Overall Stars,Last Turn Played,Last Turn Territory," \
               "Total Turns,Total Turns Stars,Game Turns,Game Turns Stars,MVPs,MVP Stars,Streak,Streak Stars," \
-              "Discord ID,Discord Name\n"
+              "Discord ID,Discord Name,Has Verified Role\n"
         for player in self.stars:
             player_info = self.risk_api.get_player_info(player)
             player_turns = player_info["turns"]
@@ -41,13 +44,14 @@ class Main:
             discord_id = mapping[player_lower] if player_lower in mapping else ""
             discord_user = self.discord_api.get_guild_member(discord_id)
             discord_username = self.get_discord_full_username(discord_user) if discord_id and discord_user else ""
+            has_verified_role = verified_role_id in discord_user["roles"] if discord_id and discord_user else False
             csv += f"{player},{player_info['team']['name']},{self.stars[player]}," \
                    f"{last_turn['season']}/{last_turn['day']},{last_turn['territory']}," \
                    f"{player_info['stats']['totalTurns']},{player_info['ratings']['totalTurns']}," \
                    f"{player_info['stats']['gameTurns']},{player_info['ratings']['gameTurns']}," \
                    f"{player_info['stats']['mvps']},{player_info['ratings']['mvps']}," \
                    f"{player_info['stats']['streak']},{player_info['ratings']['streak']}," \
-                   f"{discord_id},{discord_username}\n"
+                   f"{discord_id},{discord_username},{has_verified_role}\n"
         return csv
 
     def get_reddit_to_discord_mapping(self, discord_to_reddit_mapping):
@@ -59,6 +63,12 @@ class Main:
                 if reddit not in mapping:
                     mapping[reddit] = discord_id
         return mapping
+
+    def get_verified_role_id(self):
+        roles = self.discord_api.get_guild_roles()
+        for role in roles:
+            if role["name"] == self.secrets.get_verified_discord_role_name():
+                return role["id"]
 
     def write_csv_file(self):
         previous_turn = self.risk_api.get_previous_turn()
@@ -147,9 +157,11 @@ if __name__ == "__main__":
     parser.add_argument("-auth", "--authenticate", action="store_const",
                         const=True, default=False,
                         help="Only open bot authentication link.")
-    parser.add_argument("-nick", "--nickname", action="store_const", const=True, default=False,
+    parser.add_argument("-csv", "--csv_only", action="store_const", const=True, default=False,
+                        help="Only generate and write the CSV.")
+    parser.add_argument("-nick", "--nickname_only", action="store_const", const=True, default=False,
                         help="Only update Discord nicknames.")
-    parser.add_argument("-test_nick", "--test_nickname", action="store_const", const=True, default=False,
+    parser.add_argument("-test_nick", "--test_nickname_only", action="store_const", const=True, default=False,
                         help="Only test Discord nickname updating.")
     parser.add_argument("-prod", "--use_prod_guild", action="store_const", const=True, default=False,
                         help="Use production guild.")
@@ -159,10 +171,11 @@ if __name__ == "__main__":
         main.username_map_file = "test_username_map.json"
     if args.authenticate:
         main.discord_api.launch_bot_auth()
-    elif args.test_nickname:
+    elif args.test_nickname_only:
         main.test_set_discord_nickname()
     else:
-        if not args.nickname:
+        if not args.nickname_only or args.csv_only:
             main.write_csv_file()
-        main.set_discord_nicknames()
+        if not args.csv_only or args.nickname_only:
+            main.set_discord_nicknames()
     Logger().log("Script end.")

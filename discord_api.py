@@ -11,6 +11,7 @@ class DiscordCache:
     def __init__(self):
         self.guild_members = None
         self.bot_id = None
+        self.guild_roles = None
 
 
 class DiscordApi:
@@ -64,6 +65,11 @@ class DiscordApi:
 
     def get_guild_member_ids(self) -> list[str]:
         return [guild_member['user']['id'] for guild_member in self.get_guild_members()]
+
+    def get_guild_roles(self) -> list[dict]:
+        if self.cache.guild_roles is None:
+            self.cache.guild_roles = self.call_api_get(f"guilds/{self.secrets['guild_id']}/roles")
+        return self.cache.guild_roles
 
     def call_api_patch(self, endpoint, body) -> dict:
         url = f"{self.api_base_url}/{endpoint}"

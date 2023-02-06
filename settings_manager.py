@@ -11,3 +11,6 @@ class SettingsManager:
 
     def get_team_name(self):
         return self.settings["settings"]["team"]
+
+    def get_verified_discord_role_name(self):
+        return self.settings["settings"]["verified_discord_role_name"]
