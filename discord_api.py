@@ -58,10 +58,18 @@ class DiscordApi:
         return cached_member
 
     def get_guild_members(self):
-        if self.cache.guild_members is None:
-            params = {"limit": 1000}
-            self.cache.guild_members = self.call_api_get(f"guilds/{self.secrets['guild_id']}/members", params=params)
+        if not self.cache.guild_members:
+            limit = 1000
+            self.cache.guild_members = self._call_api_get_guild_members(limit)
+            members_slice = self.cache.guild_members
+            while len(members_slice) == limit:
+                members_slice = self._call_api_get_guild_members(limit, members_slice[-1]["user"]["id"])
+                self.cache.guild_members += members_slice
         return self.cache.guild_members
+
+    def _call_api_get_guild_members(self, limit=1, after="0"):
+        params = {"limit": limit, "after": after}
+        return self.call_api_get(f"guilds/{self.secrets['guild_id']}/members", params=params)
 
     def get_guild_member_ids(self) -> list[str]:
         return [guild_member['user']['id'] for guild_member in self.get_guild_members()]
