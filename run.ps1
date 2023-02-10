@@ -1,0 +1,1 @@
+venv\Scripts\python.exe .\main.py -prod >> output.log 2>>errors.log
