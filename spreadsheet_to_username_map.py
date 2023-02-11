@@ -1,3 +1,4 @@
+import csv
 import json
 import unittest
 
@@ -11,21 +12,22 @@ class Main:
     @staticmethod
     def read_csv(path: str) -> list[dict]:
         rows = []
-        with open(path, 'r', encoding='utf-8') as file:
-            header = [x.strip() for x in file.readline().split(',')]
-            for line in file:
-                rows.append({key.strip(): value.strip() for key, value in zip(header, line.split(','))})
+        with open(path, 'r', encoding='utf-8', newline='') as csvfile:
+            reader = csv.reader(csvfile)
+            header = [x.strip() for x in reader.__next__()]
+            for row in reader:
+                rows.append({key.strip(): value.strip() for key, value in zip(header, row)})
         return rows
 
     @staticmethod
-    def extract_players(csv: list[dict[str, str]]) -> dict[str, dict[str, dict]]:
+    def extract_players(csv_data: list[dict[str, str]]) -> dict[str, dict[str, dict]]:
         prefix_column = "Discord Nickname Prefix"
         update_nickname_column = "Update Discord Nickname with Bot?"
         discord_id_column = "Discord ID"
         reddit_username_column = "Reddit"
         reason_column = "Notes"
         mapping = {"players": {}, "exclude": {}}
-        for row in csv:
+        for row in csv_data:
             if row[discord_id_column] and row[reddit_username_column]:
                 category = "players" if row[update_nickname_column] == "Yes" else "exclude"
                 mapping[category][row[discord_id_column]] = {"reddit": row[reddit_username_column],
@@ -67,6 +69,9 @@ class TestSuite(unittest.TestCase):
             {"Discord Nickname": "other name", "Discord Name": "not me#3742", "Discord Nickname Prefix": "prefix",
              "Update Discord Nickname with Bot?": "Yes", "Discord ID": "1234567890", "Reddit": "PM_me_your_moves",
              "Notes": ""},
+            {"Discord Nickname": "other other name", "Discord Name": "not me#7682", "Discord Nickname Prefix": "",
+             "Update Discord Nickname with Bot?": "Yes", "Discord ID": "098765321", "Reddit": "PM_me_your_orders",
+             "Notes": "not vetted, probably a spy"},
             {"Discord Nickname": "", "Discord Name": "EpicWolverine#3742", "Discord Nickname Prefix": "EpicWolverine",
              "Update Discord Nickname with Bot?": "No", "Discord ID": "140174746485653504", "Reddit": "EpicWolverine",
              "Notes": "Script cannot update server owner's nickname"},
@@ -81,6 +86,7 @@ class TestSuite(unittest.TestCase):
         expected = {
             "players": {
                 "1234567890": {"prefix": "prefix", "reddit": "PM_me_your_moves"},
+                "098765321": {"prefix": "", "reddit": "PM_me_your_orders", "reason": "not vetted, probably a spy"},
             },
             "exclude": {
                 "140174746485653504": {"prefix": "EpicWolverine", "reddit": "EpicWolverine",
