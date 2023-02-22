@@ -14,6 +14,7 @@ class RiskApiCache:
         self.mercs = None
         self.player_info = {}
         self.turns = None
+        self.territory_turn = {}
 
 
 class RiskApi:
@@ -91,6 +92,18 @@ class RiskApi:
 
     def get_previous_turn(self) -> dict:
         return self.get_turns()[-2]
+
+    def _get_territory_turn_api_data(self, season: int, day: int, territory: str) -> dict:
+        return self._call_api("territory/turn", {"season": season, "day": day, "territory": territory})
+
+    def get_territory_turn(self, season: int, day: int, territory: str) -> dict:
+        if season not in self.cache.territory_turn:
+            self.cache.territory_turn[season] = {}
+        if day not in self.cache.territory_turn[season]:
+            self.cache.territory_turn[season][day] = {}
+        if territory not in self.cache.territory_turn[season][day]:
+            self.cache.territory_turn[season][day][territory] = self._get_territory_turn_api_data(season, day, territory)
+        return self.cache.territory_turn[season][day][territory]
 
 
 class MockRiskApi(RiskApi):
