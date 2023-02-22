@@ -23,14 +23,14 @@ class RiskApi:
         self.team = SettingsManager().get_team_name()
         self.logger = Logger()
 
-    def _call_api(self, endpoint):
+    def _call_api(self, endpoint, params=None):
         api_url = f"{self.api_base_url}/{endpoint}"
-        self.logger.log(f"Calling GET {api_url}")
+        self.logger.log(f"Calling GET {api_url} {params=}")
         headers = {"Content-Type": "application/json"}
-        return requests.get(api_url, headers=headers).json()
+        return requests.get(api_url, headers=headers, params=params).json()
 
     def _get_team_api_data(self, endpoint):
-        return self._call_api(f"{endpoint}?team={self.team}")
+        return self._call_api(endpoint, {"team": self.team})
 
     def get_players(self):
         if self.cache.players is None:
@@ -56,7 +56,7 @@ class RiskApi:
         return merc_stars
 
     def _get_player_api_data(self, player_name):
-        return self._call_api(f"player?player={player_name}")
+        return self._call_api("player", {"player": player_name})
 
     def get_player_info(self, player_name):
         if player_name not in self.cache.player_info or self.cache.player_info[player_name] is None:
@@ -67,8 +67,7 @@ class RiskApi:
         if player_names:
             players_data = []
             for i in range(0, len(player_names), MAX_BATCH_SIZE):
-                api_url = f"players/batch?players={','.join(player_names[i:i + MAX_BATCH_SIZE])}"
-                players_data += self._call_api(api_url)
+                players_data += self._call_api("players/batch", {"players": ','.join(player_names[i:i + MAX_BATCH_SIZE])})
             return players_data
         return []
 
