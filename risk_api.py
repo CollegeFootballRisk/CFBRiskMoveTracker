@@ -43,14 +43,13 @@ class RiskApi:
             self.cache.mercs = self._get_team_api_data("mercs")
         return self.cache.mercs
 
-    def get_player_stars(self, players):
+    def get_player_stars(self, player_names: list):
         player_stars = {}
-        for player in players:
-            player_name = player["player"]
+        for player_name in player_names:
             player_stars[player_name] = self.get_player_info(player_name)["ratings"]["overall"]
         return player_stars
 
-    def get_merc_stars(self, mercs):
+    def get_merc_stars(self, mercs: list[dict]):
         merc_stars = {}
         for merc in mercs:
             merc_stars[merc["player"]] = merc["stars"]
@@ -72,10 +71,7 @@ class RiskApi:
             return players_data
         return []
 
-    def get_batch_player_info(self, players: list[dict]) -> list[dict]:
-        player_names = []
-        for player in players:
-            player_names.append(player["player"])
+    def get_batch_player_info(self, player_names: list) -> list[dict]:
         players_info = self._get_batch_player_api_data(player_names)
         for player in players_info:
             self.cache.player_info[player["name"]] = player
