@@ -151,7 +151,7 @@ class TestSuite(unittest.TestCase):
         self.assertIsNotNone(self.cut.get_mercs())
 
     def test_stars(self):
-        self.assertEqual({"user1": 4, "EpicWolverine": 4, "user2": 4}, self.cut.get_player_stars(self.cut.get_players()))
+        self.assertEqual({"user1": 4, "EpicWolverine": 4, "user2": 4}, self.cut.get_player_stars(["user1", "EpicWolverine", "user2"]))
         self.assertEqual({"merc1": 4, "Mautamu": 3}, self.cut.get_merc_stars(self.cut.get_mercs()))
 
     def test_get_player_info(self):
