@@ -139,7 +139,8 @@ class Main:
 
     def test_set_discord_nickname(self):
         self.discord_api.use_test_guild()
-        self.discord_api.set_nickname(self.discord_api.secrets["test_user_id"], f"test|EpicWolverine {self.star_char * 4}")
+        for x in range(12):
+            self.discord_api.set_nickname(self.discord_api.secrets["test_user_id"], f"test|EpicWolverine {self.star_char * 4}")
 
 
 class TestSuite(unittest.TestCase):

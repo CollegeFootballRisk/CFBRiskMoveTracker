@@ -84,6 +84,12 @@ class DiscordApi:
         self.logger.log(f"Calling PATCH {url}")
         r = requests.patch(url, json=body, headers=self.headers)
         response = r.json()
+        # xratelimits = "\n".join([f"{key}: {r.headers[key]}" for key in r.headers.keys() if 'x-ratelimit' in key])
+        # self.logger.log(f"X-RateLimit Headers: {xratelimits}")
+        if int(r.headers["x-ratelimit-remaining"]) == 0:
+            delay = float(r.headers["x-ratelimit-reset-after"])
+            self.logger.log(f"X-RateLimit-Remaining is 0. Waiting {delay} seconds.")
+            time.sleep(delay)
         try:
             r.raise_for_status()
         except Exception as e:
