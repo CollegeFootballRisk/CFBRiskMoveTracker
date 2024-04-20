@@ -43,6 +43,10 @@ class DiscordApi:
                 self.logger.log(f"Waiting {delay} seconds.")
                 time.sleep(delay)
                 response = func(*args)
+            if "message" in response:
+                if response["message"] in ["Unknown Guild", "Missing Access"]:
+                    self.logger.log("Fatal error. Exiting.")
+                    sys.exit(1)
         return response
 
     def get_bot_id(self):
