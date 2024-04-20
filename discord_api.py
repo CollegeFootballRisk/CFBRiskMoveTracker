@@ -29,6 +29,9 @@ class DiscordApi:
         url = f"{self.api_base_url}/{endpoint}"
         self.logger.log(f"Calling GET {url}")
         r = requests.get(url, params=params, headers=self.headers)
+        return self.check_response_and_retry(r, self.call_api_get, endpoint, params)
+
+    def check_response_and_retry(self, r, func, *args):
         response = r.json()
         try:
             r.raise_for_status()
@@ -39,7 +42,7 @@ class DiscordApi:
                 delay = response["retry_after"]
                 self.logger.log(f"Waiting {delay} seconds.")
                 time.sleep(delay)
-                response = self.call_api_get(url, params)
+                response = func(*args)
         return response
 
     def get_bot_id(self):
@@ -83,24 +86,13 @@ class DiscordApi:
         url = f"{self.api_base_url}/{endpoint}"
         self.logger.log(f"Calling PATCH {url}")
         r = requests.patch(url, json=body, headers=self.headers)
-        response = r.json()
         # xratelimits = "\n".join([f"{key}: {r.headers[key]}" for key in r.headers.keys() if 'x-ratelimit' in key])
         # self.logger.log(f"X-RateLimit Headers: {xratelimits}")
         if int(r.headers["x-ratelimit-remaining"]) == 0:
             delay = float(r.headers["x-ratelimit-reset-after"])
             self.logger.log(f"X-RateLimit-Remaining is 0. Waiting {delay} seconds.")
             time.sleep(delay)
-        try:
-            r.raise_for_status()
-        except Exception as e:
-            self.logger.log(response)
-            self.logger.log(e)
-            if "retry_after" in response:
-                delay = response["retry_after"]
-                self.logger.log(f"Waiting {delay} seconds.")
-                time.sleep(delay)
-                response = self.call_api_patch(url, body)
-        return response
+        return self.check_response_and_retry(r, self.call_api_patch, endpoint, body)
 
     def set_nickname(self, discord_id, nickname):
         self.logger.log(f"Setting {discord_id} to \"{nickname}\"")
