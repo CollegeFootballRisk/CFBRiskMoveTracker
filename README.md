@@ -41,10 +41,12 @@ options:
 ### `settings.json`
 Stores various keys that should never be shared with anyone!  
 Create a file named `settings.json` in this script's folder and paste the following. Replace descriptions with the needed values as described in [Set Up](#set-up).
+`verified_discord_role_name` is the Discord role name for verified team players. Players with this role will be marked True in the "Has Verified Role" CSV column.
 ```JSON
 {
     "settings": {
         "team": "Aldi"
+        "verified_discord_role_name": "Wolverine"
     },
     "secrets": {
         "client_id": "from registering your bot",
