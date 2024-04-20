@@ -44,8 +44,17 @@ class DiscordApi:
                 time.sleep(delay)
                 response = func(*args)
             if "message" in response:
-                if response["message"] in ["Unknown Guild", "Missing Access"]:
-                    self.logger.log("Fatal error. Exiting.")
+                if response["message"] in "Unknown Guild":  # code 10004
+                    self.logger.log(f"You have not authorized the bot with guild {self.secrets['guild_id']}. "
+                                    f"Run the script with -auth.")
+                    sys.exit(1)
+                if response["message"] in "Missing Permissions":  # code 50013
+                    self.logger.log(f"You revoked or denied the bot's \"Manage Nicknames\" permission. "
+                                    f"Restore this permission or kick and reauthorize the bot.")
+                    sys.exit(1)
+                if response["message"] in "Missing Access":  # code 50001
+                    self.logger.log("Enable the GUILD_MEMBERS Intent in your Bot settings on "
+                                    "the Discord Developer Portal.")
                     sys.exit(1)
         return response
 
