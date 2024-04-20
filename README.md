@@ -76,13 +76,16 @@ Only the Discord User ID is used in the `exclude` section. You can use the key v
 **WARNING:** The server owner cannot have their nickname changed by anyone but themselves, including bots. This is a Discord restriction. Add their Discord ID to the exclude list to suppress errors.
 ```JSON
 {
-    "map": {
+    "players": {
         "12345678901234567890": {"reddit": "PM_me_your_risk_moves", "prefix": "John"},
         "09876543210987654231": {"reddit": "xX_360NoScope_Xx"}
     },
     "exclude": {
         "67890123456789012345": {"reddit": "EpicWolverine", "reason": "Server Owner cannot have nickname changed by bots"},
         "228537642583588864": {"nick": "Music Bot"}
+    },
+    "diplomats": {
+        "111111111111111111": {"nickname": "Ag", "team": "Texas A&M"}
     }
 }
 ```
