@@ -15,19 +15,19 @@ Written for Team Aldi as part of the Grocery Store Beta.
    python.exe -m pip install --upgrade pip
    pip install -r .\requirements.txt
    ```
-5. Create a Discord application at https://discord.com/developers/applications
-6. Under OAuth2, copy the Client ID into your `settings.json` (see below).
-7. Under Bot, create a bot and enable the Server Members Intent (also called `GUILD_MEMBERS`).   
+4. Create a Discord application at https://discord.com/developers/applications
+5. Under OAuth2, copy the Client ID into your `settings.json` (see below).
+6. Under Bot, create a bot and enable the Server Members Intent (also called `GUILD_MEMBERS`).   
   ![image](https://github.com/EpicWolverine/CFBRiskMoveTracker/assets/2897970/9e14823c-2d29-436c-a2d5-25da5d504d4d)
-8. Copy the bot's token into your `settings.json` (see below).
-9. In Discord, got to Settings -> Advanced -> turn on Developer Mode. This lets you right-click on most things and copy their internal ID.
-10. Right-click on your server, click Copy ID, and paste into your `settings.json` under `guild_id` (see below).
-11. Create a `username_map.json` and fill it out with users' Discord IDs and Reddit usernames. See below for details.
-12. Run `py.exe main.py -auth` to add the bot to your server.
-13. Move the bot's role to the top of the list, or at least above everyone whose nickname you want to be able to change.
-14. Run `py.exe main.py -prod` manually and see if it works!
-15. Set up a scheduled task (or cron job) that runs the script 5 to 10 minutes after the day's roll. On Windows, that will look like `venv\Scripts\python.exe .\main.py -prod >> output.log 2>>errors.log`. This creates an `output.log` and `errors.log` in addition to the `script.log` in case anything goes horribly wrong.
-16. You will need to add any new people that join your team and Discord server to `username_map.json`. See `script.log` for any errors.
+7. Copy the bot's token into your `settings.json` (see below).
+8. In Discord, got to Settings -> Advanced -> turn on Developer Mode. This lets you right-click on most things and copy their internal ID.
+9. Right-click on your server, click Copy ID, and paste into your `settings.json` under `guild_id` (see below).
+10. Create a `username_map.json` and fill it out with users' Discord IDs and Reddit usernames. See below for details.
+11. Run `py.exe main.py -auth` to add the bot to your server.
+12. Move the bot's role to the top of the list, or at least above everyone whose nickname you want to be able to change.
+13. Run `py.exe main.py -prod` manually and see if it works!
+14. Set up a scheduled task (or cron job) that runs the script 5 to 10 minutes after the day's roll. On Windows, that will look like `venv\Scripts\python.exe .\main.py -prod >> output.log 2>>errors.log`. This creates an `output.log` and `errors.log` in addition to the `script.log` in case anything goes horribly wrong.
+15. You will need to add any new people that join your team and Discord server to `username_map.json`. See `script.log` for any errors.
 
 # Details
 
